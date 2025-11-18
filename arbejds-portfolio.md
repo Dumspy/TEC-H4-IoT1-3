@@ -22,7 +22,8 @@
 **Hvordan løser vi dette?**
 
 ### Wi-Fi
-**Hvad sker der hvis wifi fejler? log til file og submit senere?**
+- Hvad sker der hvis wifi fejler? log til file og submit senere?
+- Måske Wifi i sync step istedet for hvert klik, gem til file i mellem tiden.
 
 ### MQTT
 **Hvordan implementerer vi dette?**
@@ -34,3 +35,4 @@
 **Analyse:**
 - Hvor længe skal anordningen være aktiv inden DeepSleep aktiveres?
 - Hvordan skal opvågen fungere?
+- Altid sleep efter hver handling eller forbliv oppe og håndtere flere klik og sleep efter x tid
