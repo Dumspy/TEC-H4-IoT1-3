@@ -13,15 +13,32 @@ const char* MQTT_CLIENT_ID = "ESP32_Felix_Button_Device";
 const int WIFI_TIMEOUT = 10000;
 const int MQTT_TIMEOUT = 5000;
 
-const int BUTTON_PIN_1 = 25;
-const int BUTTON_PIN_2 = 32;
-const int BUTTON_PIN_3 = 33;
-const int BUTTON_PIN_4 = 26;
+struct ButtonConfig {
+  int buttonPin;
+  int ledPin;
+  int buttonNumber;
+  const char* emoji;
+  const char* mood;
+};
 
-const int LED_PIN_1 = 4;
-const int LED_PIN_2 = 15;
-const int LED_PIN_3 = 2;
-const int LED_PIN_4 = 18;
+static const ButtonConfig BUTTON_CONFIGS[] = {
+  {25, 4, 1, "☹️", "sad"},
+  {32, 15, 2, "😊", "happy"},
+  {33, 2, 3, "😐", "neutral"},
+  {26, 18, 4, "😡", "angry"}
+};
+
+const int BUTTON_COUNT = sizeof(BUTTON_CONFIGS) / sizeof(BUTTON_CONFIGS[0]);
+
+const ButtonConfig* getButtonConfig(int pin) {
+  for (int i = 0; i < BUTTON_COUNT; i++) {
+    if (BUTTON_CONFIGS[i].buttonPin == pin) {
+      return &BUTTON_CONFIGS[i];
+    }
+  }
+  return NULL;
+}
+
 
 const int LED_DISPLAY_TIME = 3000;
 
@@ -104,20 +121,11 @@ void setup() {
   Serial.begin(9600);
   delay(100);
   
-  pinMode(BUTTON_PIN_1, INPUT);
-  pinMode(BUTTON_PIN_2, INPUT);
-  pinMode(BUTTON_PIN_3, INPUT);
-  pinMode(BUTTON_PIN_4, INPUT);
-  
-  pinMode(LED_PIN_1, OUTPUT);
-  pinMode(LED_PIN_2, OUTPUT);
-  pinMode(LED_PIN_3, OUTPUT);
-  pinMode(LED_PIN_4, OUTPUT);
-  
-  digitalWrite(LED_PIN_1, LOW);
-  digitalWrite(LED_PIN_2, LOW);
-  digitalWrite(LED_PIN_3, LOW);
-  digitalWrite(LED_PIN_4, LOW);
+  for (int i = 0; i < BUTTON_COUNT; i++) {
+    pinMode(BUTTON_CONFIGS[i].buttonPin, INPUT);
+    pinMode(BUTTON_CONFIGS[i].ledPin, OUTPUT);
+    digitalWrite(BUTTON_CONFIGS[i].ledPin, LOW);
+  }
   
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   
@@ -125,59 +133,38 @@ void setup() {
     Serial.println("Woke up from button press!");
     
     uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
+    int wakeup_pin = __builtin_ctzll(wakeup_pin_mask);
     
-    int buttonNumber = 0;
-    const char* emoji = "";
-    const char* mood = "";
+    const ButtonConfig* config = getButtonConfig(wakeup_pin);
     
-    if (wakeup_pin_mask & (1ULL << BUTTON_PIN_1)) {
-      digitalWrite(LED_PIN_1, HIGH);
-      buttonNumber = 1;
-      emoji = "☹️";
-      mood = "sad";
-      Serial.println("Sad smiley selected! ☹️");
-    }
-    else if (wakeup_pin_mask & (1ULL << BUTTON_PIN_2)) {
-      digitalWrite(LED_PIN_2, HIGH);
-      buttonNumber = 2;
-      emoji = "😊";
-      mood = "happy";
-      Serial.println("Happy smiley selected! 😊");
-    }
-    else if (wakeup_pin_mask & (1ULL << BUTTON_PIN_3)) {
-      digitalWrite(LED_PIN_3, HIGH);
-      buttonNumber = 3;
-      emoji = "😐";
-      mood = "neutral";
-      Serial.println("Neutral smiley selected! 😐");
-    }
-    else if (wakeup_pin_mask & (1ULL << BUTTON_PIN_4)) {
-      digitalWrite(LED_PIN_4, HIGH);
-      buttonNumber = 4;
-      emoji = "😡";
-      mood = "angry";
-      Serial.println("Angry smiley selected! 😡");
-    }
-    
-    if (connectToWiFi()) {
-      if (connectToMQTT()) {
-        publishButtonPress(buttonNumber, emoji, mood);
-        mqttClient.disconnect();
+    if (config) {
+      digitalWrite(config->ledPin, HIGH);
+      Serial.print(config->mood);
+      Serial.print(" smiley selected! ");
+      Serial.println(config->emoji);
+      
+      if (connectToWiFi()) {
+        if (connectToMQTT()) {
+          publishButtonPress(config->buttonNumber, config->emoji, config->mood);
+          mqttClient.disconnect();
+        }
       }
+      
+      delay(LED_DISPLAY_TIME);
+      digitalWrite(config->ledPin, LOW);
     }
-    
-    delay(LED_DISPLAY_TIME);
-    
-    digitalWrite(LED_PIN_1, LOW);
-    digitalWrite(LED_PIN_2, LOW);
-    digitalWrite(LED_PIN_3, LOW);
-    digitalWrite(LED_PIN_4, LOW);
   } else {
     Serial.println("Smiley System Initialized!");
-    Serial.println("Button 1 (GPIO 25) = Sad ☹️");
-    Serial.println("Button 2 (GPIO 32) = Happy 😊");
-    Serial.println("Button 3 (GPIO 33) = Neutral 😐");
-    Serial.println("Button 4 (GPIO 26) = Angry 😡");
+    for (int i = 0; i < BUTTON_COUNT; i++) {
+      Serial.print("Button ");
+      Serial.print(BUTTON_CONFIGS[i].buttonNumber);
+      Serial.print(" (GPIO ");
+      Serial.print(BUTTON_CONFIGS[i].buttonPin);
+      Serial.print(") = ");
+      Serial.print(BUTTON_CONFIGS[i].mood);
+      Serial.print(" ");
+      Serial.println(BUTTON_CONFIGS[i].emoji);
+    }
   }
   
   goToSleep();
