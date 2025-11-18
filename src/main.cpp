@@ -41,15 +41,17 @@ void setup() {
   if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT1) {
     Serial.println("Woke up from button press!");
     
-    if (digitalRead(BUTTON_PIN_1) == HIGH) {
+    uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
+    
+    if (wakeup_pin_mask & (1ULL << BUTTON_PIN_1)) {
       digitalWrite(LED_PIN_1, HIGH);
       Serial.println("Happy smiley selected! 😊");
     }
-    else if (digitalRead(BUTTON_PIN_2) == HIGH) {
+    else if (wakeup_pin_mask & (1ULL << BUTTON_PIN_2)) {
       digitalWrite(LED_PIN_2, HIGH);
       Serial.println("Neutral smiley selected! 😐");
     }
-    else if (digitalRead(BUTTON_PIN_3) == HIGH) {
+    else if (wakeup_pin_mask & (1ULL << BUTTON_PIN_3)) {
       digitalWrite(LED_PIN_3, HIGH);
       Serial.println("Sad smiley selected! ☹️");
     }
