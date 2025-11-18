@@ -216,6 +216,3 @@ void setup() {
   
   goToSleep();
 }
-
-void loop() {
-}
