@@ -73,14 +73,15 @@ bool syncNTPTime() {
   return false;
 }
 
-void getFormattedTime(char* buffer, size_t bufferSize) {
+String getFormattedTime() {
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) {
-    snprintf(buffer, bufferSize, "1970-01-01T00:00:00Z");
-    return;
+    return "1970-01-01T00:00:00Z";
   }
   
-  strftime(buffer, bufferSize, "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+  char buffer[30];
+  strftime(buffer, sizeof(buffer), "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+  return String(buffer);
 }
 
 bool connectToWiFi() {
@@ -126,11 +127,10 @@ bool connectToMQTT() {
 
 void publishButtonPress(int buttonNumber, const char* emoji, const char* mood) {
   if (mqttClient.connected()) {
-    char timestamp[30];
-    getFormattedTime(timestamp, sizeof(timestamp));
+    String timestamp = getFormattedTime();
     
     char message[150];
-    snprintf(message, sizeof(message), "{\"button\":%d,\"mood\":\"%s\",\"emoji\":\"%s\",\"timestamp\":\"%s\"}", buttonNumber, mood, emoji, timestamp);
+    snprintf(message, sizeof(message), "{\"button\":%d,\"mood\":\"%s\",\"emoji\":\"%s\",\"timestamp\":\"%s\"}", buttonNumber, mood, emoji, timestamp.c_str());
     
     if (mqttClient.publish(MQTT_TOPIC, message)) {
       Serial.print("Published: ");
