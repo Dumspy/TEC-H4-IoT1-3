@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <time.h>
 
 const char* WIFI_SSID = "IoT_H3/4";
 const char* WIFI_PASSWORD = "98806829";
@@ -13,6 +14,11 @@ const char* MQTT_CLIENT_ID = "ESP32_Felix_Button_Device";
 const int WIFI_TIMEOUT = 10000;
 const int MQTT_TIMEOUT = 5000;
 
+const char* NTP_SERVER = "pool.ntp.org";
+const long GMT_OFFSET_SEC = 3600;
+const int DAYLIGHT_OFFSET_SEC = 3600;
+const int NTP_TIMEOUT = 10000;
+
 struct ButtonConfig {
   int buttonPin;
   int ledPin;
@@ -22,10 +28,10 @@ struct ButtonConfig {
 };
 
 static const ButtonConfig BUTTON_CONFIGS[] = {
-  {25, 4, 1, "☹️", "sad"},
-  {32, 15, 2, "😊", "happy"},
+  {26, 18, 1, "😡", "angry"},
+  {25, 4, 2, "☹️", "sad"},
   {33, 2, 3, "😐", "neutral"},
-  {26, 18, 4, "😡", "angry"}
+  {32, 15, 4, "😊", "happy"},
 };
 
 const int BUTTON_COUNT = sizeof(BUTTON_CONFIGS) / sizeof(BUTTON_CONFIGS[0]);
@@ -46,6 +52,36 @@ const int LED_DISPLAY_TIME = 7000;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
+
+bool syncNTPTime() {
+  Serial.print("Syncing time with NTP server");
+  configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER);
+  
+  unsigned long startAttemptTime = millis();
+  
+  while (millis() - startAttemptTime < NTP_TIMEOUT) {
+    time_t now = time(nullptr);
+    if (now > 8 * 3600 * 2) {
+      Serial.println("\nTime synced!");
+      return true;
+    }
+    delay(500);
+    Serial.print(".");
+  }
+  
+  Serial.println("\nTime sync failed!");
+  return false;
+}
+
+void getFormattedTime(char* buffer, size_t bufferSize) {
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    snprintf(buffer, bufferSize, "1970-01-01T00:00:00Z");
+    return;
+  }
+  
+  strftime(buffer, bufferSize, "%Y-%m-%dT%H:%M:%SZ", &timeinfo);
+}
 
 bool connectToWiFi() {
   Serial.print("Connecting to WiFi");
@@ -90,8 +126,11 @@ bool connectToMQTT() {
 
 void publishButtonPress(int buttonNumber, const char* emoji, const char* mood) {
   if (mqttClient.connected()) {
-    char message[100];
-    snprintf(message, sizeof(message), "{\"button\":%d,\"mood\":\"%s\",\"emoji\":\"%s\"}", buttonNumber, mood, emoji);
+    char timestamp[30];
+    getFormattedTime(timestamp, sizeof(timestamp));
+    
+    char message[150];
+    snprintf(message, sizeof(message), "{\"button\":%d,\"mood\":\"%s\",\"emoji\":\"%s\",\"timestamp\":\"%s\"}", buttonNumber, mood, emoji, timestamp);
     
     if (mqttClient.publish(MQTT_TOPIC, message)) {
       Serial.print("Published: ");
@@ -146,6 +185,8 @@ void setup() {
       Serial.println(config->emoji);
       
       if (connectToWiFi()) {
+        syncNTPTime();
+        
         if (connectToMQTT()) {
           publishButtonPress(config->buttonNumber, config->emoji, config->mood);
           mqttClient.disconnect();
