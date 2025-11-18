@@ -40,7 +40,7 @@ const ButtonConfig* getButtonConfig(int pin) {
 }
 
 
-const int LED_DISPLAY_TIME = 3000;
+const int LED_DISPLAY_TIME = 7000;
 
 #define BUTTON_PIN_BITMASK ((1ULL << 25) | (1ULL << 32) | (1ULL << 33) | (1ULL << 26))
 
@@ -139,6 +139,8 @@ void setup() {
     
     if (config) {
       digitalWrite(config->ledPin, HIGH);
+      unsigned long ledOnTime = millis();
+      
       Serial.print(config->mood);
       Serial.print(" smiley selected! ");
       Serial.println(config->emoji);
@@ -150,7 +152,11 @@ void setup() {
         }
       }
       
-      delay(LED_DISPLAY_TIME);
+      unsigned long elapsedTime = millis() - ledOnTime;
+      if (elapsedTime < LED_DISPLAY_TIME) {
+        delay(LED_DISPLAY_TIME - elapsedTime);
+      }
+      
       digitalWrite(config->ledPin, LOW);
     }
   } else {
