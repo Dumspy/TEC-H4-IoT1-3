@@ -9,8 +9,8 @@ const char* WIFI_PASSWORD = "98806829";
 
 const char* MQTT_SERVER = "wilson.local";
 const int MQTT_PORT = 1883;
-const char* MQTT_TOPIC = "esp32/felix/buttons";
-const char* MQTT_CLIENT_ID = "ESP32_Felix_Button_Device";
+const char* MQTT_TOPIC = "esp32/mood/buttons";
+const char* MQTT_CLIENT_ID = "ESP32_Mood_Tracker_Device";
 
 const int WIFI_TIMEOUT = 10000;
 const int MQTT_TIMEOUT = 5000;
