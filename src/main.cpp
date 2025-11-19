@@ -43,7 +43,7 @@ const char* ROOT_CA = \
 "/4cXqqfWhE1x7znsU4IUXaL6CN/cpe6+forBUi84Cv6uVmeRhsABt+ENxaLG6CDu" \
 "Fd0rtKYmoqbkfqPGXeRVfvbJg0PJmrBHZG2KOMDC37fvIysHGc+jYl6yWh6b5mEG" \
 "uOn/9KgYpDzd" \
-"\n-----END CERTIFICATE-----\n";
+"\n-----END CERTIFICATE-----";
 
 struct ButtonConfig {
   int buttonPin;
