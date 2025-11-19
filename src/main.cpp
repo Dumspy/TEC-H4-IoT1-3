@@ -50,7 +50,6 @@ const int LED_DISPLAY_TIME = 7000;
 
 #define BUTTON_PIN_BITMASK ((1ULL << 25) | (1ULL << 32) | (1ULL << 33) | (1ULL << 26))
 
-RTC_DATA_ATTR time_t lastNTPSync = 0;
 RTC_DATA_ATTR bool hasInitializedTime = false;
 
 WiFiClient espClient;
@@ -151,15 +150,16 @@ void setup() {
   }
   
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+  
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || !hasInitializedTime || ESP_SLEEP_WAKEUP_EXT1){
+    initLogger();
+  }
 
   if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || !hasInitializedTime) {
     Serial.println("Woke up from timer for sync!");
-
-    initLogger();
     
     if (connectToWiFi()) {
       if (syncNTPTime()) {
-        lastNTPSync = time(nullptr);
         hasInitializedTime = true;
       }
       
@@ -172,9 +172,7 @@ void setup() {
   
   if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT1) {
     Serial.println("Woke up from button press!");
-    
-    initLogger();
-    
+        
     uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
     int wakeup_pin = __builtin_ctzll(wakeup_pin_mask);
     

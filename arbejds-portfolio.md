@@ -16,17 +16,17 @@
     - En god analyse og overvejelser danner grundlag for hvor længe anordningen sover, inden den vågner rutinemæssigt
 
 ### PoC
-Initiale Proof of concept ekistere stadige [her](https://github.com/Dumspy/TEC-H4-IoT1-3/tree/poc), denne poc er blevet brugt som base til det færdige project.
+Initiale Proof of concept eksisterer stadig [her](https://github.com/Dumspy/TEC-H4-IoT1-3/tree/poc), denne poc er blevet brugt som base til det færdige project.
 
 ### Debounce
 **Hvordan løser vi dette?**
-    - debounce burde ikke opstå/være et problem, da vi kun håndtere det enklte tryk som forårsaget wake up
+    - debounce burde ikke opstå/være et problem, da vi kun håndterer det enkelte tryk som forårsaget wake up
 
 ### Wi-Fi
 - Hvad sker der hvis wifi fejler? log til file og submit senere?
     - Dependencien på wifi i hvert wake up/knappe tryk er blevet fjernet(i forhold til poc) og vi logger istedet til fil som kan syncs senere
 - Måske Wifi i sync step istedet for hvert klik, gem til file i mellem tiden.
-    - Wifi er flytted til kun at håndteres i "sync" steppet til både at sync fra vores locale log fil til mqtt & sync ntp
+    - Wifi er flyttet til kun at håndteres i "sync" steppet til både at sync fra vores locale log fil til mqtt & sync ntp
 
 ## TODO
 
