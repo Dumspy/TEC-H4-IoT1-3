@@ -20,3 +20,4 @@ Opdatering af arbejds-portfolio
 
 ## Lasse
 Tilføjet certificate og TLS i connectoToMQTT
+Påbegyndt refactor af kode
