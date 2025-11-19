@@ -2,6 +2,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <time.h>
+#include "logger.h"
 
 const char* WIFI_SSID = "IoT_H3/4";
 const char* WIFI_PASSWORD = "98806829";
@@ -45,10 +46,11 @@ const ButtonConfig* getButtonConfig(int pin) {
   return NULL;
 }
 
-
 const int LED_DISPLAY_TIME = 7000;
 
 #define BUTTON_PIN_BITMASK ((1ULL << 25) | (1ULL << 32) | (1ULL << 33) | (1ULL << 26))
+
+RTC_DATA_ATTR bool hasInitializedTime = false;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -125,25 +127,6 @@ bool connectToMQTT() {
   return false;
 }
 
-void publishButtonPress(int buttonNumber, const char* emoji, const char* mood) {
-  if (mqttClient.connected()) {
-    String timestamp = getFormattedTime();
-    
-    char message[150];
-    snprintf(message, sizeof(message), "{\"button\":%d,\"mood\":\"%s\",\"emoji\":\"%s\",\"timestamp\":\"%s\"}", buttonNumber, mood, emoji, timestamp.c_str());
-    
-    if (mqttClient.publish(MQTT_TOPIC, message)) {
-      Serial.print("Published: ");
-      Serial.println(message);
-    } else {
-      Serial.println("Publish failed!");
-    }
-    
-    mqttClient.loop();
-    delay(100);
-  }
-}
-
 void goToSleep() {
   Serial.println("Going to deep sleep...");
   
@@ -153,12 +136,12 @@ void goToSleep() {
   Serial.flush();
   
   esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
+  esp_sleep_enable_timer_wakeup(3600ULL * 1000000ULL); // 1 hour
   esp_deep_sleep_start();
 }
 
 void setup() {
   Serial.begin(9600);
-  delay(100);
   
   for (int i = 0; i < BUTTON_COUNT; i++) {
     pinMode(BUTTON_CONFIGS[i].buttonPin, INPUT);
@@ -168,9 +151,28 @@ void setup() {
   
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
   
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || !hasInitializedTime || ESP_SLEEP_WAKEUP_EXT1){
+    initLogger();
+  }
+
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || !hasInitializedTime) {
+    Serial.println("Woke up from timer for sync!");
+    
+    if (connectToWiFi()) {
+      if (syncNTPTime()) {
+        hasInitializedTime = true;
+      }
+      
+      if (connectToMQTT()) {
+        syncLoggedEvents(mqttClient, MQTT_TOPIC);
+        mqttClient.disconnect();
+      }
+    }
+  }
+  
   if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT1) {
     Serial.println("Woke up from button press!");
-    
+        
     uint64_t wakeup_pin_mask = esp_sleep_get_ext1_wakeup_status();
     int wakeup_pin = __builtin_ctzll(wakeup_pin_mask);
     
@@ -184,14 +186,7 @@ void setup() {
       Serial.print(" smiley selected! ");
       Serial.println(config->emoji);
       
-      if (connectToWiFi()) {
-        syncNTPTime();
-        
-        if (connectToMQTT()) {
-          publishButtonPress(config->buttonNumber, config->emoji, config->mood);
-          mqttClient.disconnect();
-        }
-      }
+      logButtonPress(config->buttonNumber, config->emoji, config->mood);
       
       unsigned long elapsedTime = millis() - ledOnTime;
       if (elapsedTime < LED_DISPLAY_TIME) {
@@ -200,19 +195,10 @@ void setup() {
       
       digitalWrite(config->ledPin, LOW);
     }
-  } else {
-    Serial.println("Smiley System Initialized!");
-    for (int i = 0; i < BUTTON_COUNT; i++) {
-      Serial.print("Button ");
-      Serial.print(BUTTON_CONFIGS[i].buttonNumber);
-      Serial.print(" (GPIO ");
-      Serial.print(BUTTON_CONFIGS[i].buttonPin);
-      Serial.print(") = ");
-      Serial.print(BUTTON_CONFIGS[i].mood);
-      Serial.print(" ");
-      Serial.println(BUTTON_CONFIGS[i].emoji);
-    }
   }
   
   goToSleep();
+}
+
+void loop() {
 }
