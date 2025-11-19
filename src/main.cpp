@@ -51,6 +51,7 @@ const int LED_DISPLAY_TIME = 7000;
 #define BUTTON_PIN_BITMASK ((1ULL << 25) | (1ULL << 32) | (1ULL << 33) | (1ULL << 26))
 
 RTC_DATA_ATTR time_t lastNTPSync = 0;
+RTC_DATA_ATTR bool hasInitializedTime = false;
 
 WiFiClient espClient;
 PubSubClient mqttClient(espClient);
@@ -136,7 +137,6 @@ void goToSleep() {
   Serial.flush();
   
   esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
-  // esp_sleep_enable_timer_wakeup(3600 * 1000000);
   esp_sleep_enable_timer_wakeup(120000000);
   esp_deep_sleep_start();
 }
@@ -151,6 +151,24 @@ void setup() {
   }
   
   esp_sleep_wakeup_cause_t wakeup_reason = esp_sleep_get_wakeup_cause();
+
+  if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || !hasInitializedTime) {
+    Serial.println("Woke up from timer for sync!");
+
+    initLogger();
+    
+    if (connectToWiFi()) {
+      if (syncNTPTime()) {
+        lastNTPSync = time(nullptr);
+        hasInitializedTime = true;
+      }
+      
+      if (connectToMQTT()) {
+        syncLoggedEvents(mqttClient, MQTT_TOPIC);
+        mqttClient.disconnect();
+      }
+    }
+  }
   
   if (wakeup_reason == ESP_SLEEP_WAKEUP_EXT1) {
     Serial.println("Woke up from button press!");
@@ -179,26 +197,10 @@ void setup() {
       
       digitalWrite(config->ledPin, LOW);
     }
-  } else if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER) {
-    Serial.println("Woke up from timer for sync!");
-
-    initLogger();
-    
-    if (connectToWiFi()) {
-      if (syncNTPTime()) {
-        lastNTPSync = time(nullptr);
-      }
-      
-      if (connectToMQTT()) {
-        syncLoggedEvents(mqttClient, MQTT_TOPIC);
-        mqttClient.disconnect();
-      }
-    }
   }
-
+  
   goToSleep();
 }
 
 void loop() {
-  // Not used, device sleeps in setup after handling wakeup
 }
