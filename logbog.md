@@ -10,3 +10,11 @@ Opdatering af arbejds-portfolio
 - Undersøgende arbejde omhandelende:
     - DeepSleep
     - MQTT
+
+
+# Dag 2 (2025-11-19)
+
+## Felix
+NTP Syncstep
+
+## Lasse
