@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WiFiClientSecure.h>
 #include <PubSubClient.h>
 #include <time.h>
 #include "logger.h"
@@ -8,7 +9,7 @@ const char* WIFI_SSID = "IoT_H3/4";
 const char* WIFI_PASSWORD = "98806829";
 
 const char* MQTT_SERVER = "wilson.local";
-const int MQTT_PORT = 1883;
+const int MQTT_PORT = 8883;
 const char* MQTT_TOPIC = "esp32/felix/buttons";
 const char* MQTT_CLIENT_ID = "ESP32_Felix_Button_Device";
 
@@ -19,6 +20,31 @@ const char* NTP_SERVER = "pool.ntp.org";
 const long GMT_OFFSET_SEC = 3600;
 const int DAYLIGHT_OFFSET_SEC = 3600;
 const int NTP_TIMEOUT = 10000;
+
+const char* user = "elev1";
+const char* password = "password";
+
+
+const char* ROOT_CA = \
+"-----BEGIN CERTIFICATE-----\n" \
+"MIIDBTCCAe2gAwIBAgIUXopiLMN2tHLH5ALoHzUf4tY5upUwDQYJKoZIhvcNAQEL\n" \
+"BQAwEjEQMA4GA1UEAwwHTVFUVC1DQTAeFw0yNTExMTYwOTQyMDlaFw0zNTExMTQw\n" \
+"OTQyMDlaMBIxEDAOBgNVBAMMB01RVFQtQ0EwggEiMA0GCSqGSIb3DQEBAQUAA4IB\n" \
+"DwAwggEKAoIBAQDTJehrHOy4YN3OmnVumeYq7gA7vd8iUoBLCsiHIGLAfnWA8b0f\n" \
+"r9XK3T552ztwfnZ6uK+T8kpqdQL0OczNXyEz2oi5e5MJAXYr1ytXns1SUQVgzj8F\n" \
+"Igl9i7MuwEYLyj9VjIjQgAhqDL2LlNomGyCfYoIhxJ0mvOii+yNsD5ghM2uLpaMu\n" \
+"FoP6k00gl0T/2fnJYKmy2frsRYxQLScf+arMHyXKcK89DVy5jQpFNhXHzqKwFgTY\n" \
+"kl0VIWp11ZKjCI3CNWl2t5U/GHbdHGf94TtXPvG5c6oe4hvd9On6d0fm12K5kc0C\n" \
+"ceQCq5pXP/z+a4acH8s2Iqfs+h0v8i4DtkFZAgMBAAGjUzBRMB0GA1UdDgQWBBTz\n" \
+"lQPbwuJ9LBR524FJXVYQArXcPjAfBgNVHSMEGDAWgBTzlQPbwuJ9LBR524FJXVYQ\n" \
+"ArXcPjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEBCwUAA4IBAQALGWCrskwS\n" \
+"BfaPnFZs8pm/FAcehS/YvdClyHoL4XBg7EqW+f72SiBy6Nu0Hgj7tPBwC0tPpKHA\n" \
+"IwVp5UN54IYGXnIgXirZOSxGBnoqS1ttrRYvrngmXg8woiQzaKryVEOGzwEI9/MI\n" \
+"qaclcDnK0G7KbYRnJ2o5mneyY87OKyBznW9ceas7o4hzGvKojY67nGrayWwjO7Iw\n" \
+"/4cXqqfWhE1x7znsU4IUXaL6CN/cpe6+forBUi84Cv6uVmeRhsABt+ENxaLG6CDu\n" \
+"Fd0rtKYmoqbkfqPGXeRVfvbJg0PJmrBHZG2KOMDC37fvIysHGc+jYl6yWh6b5mEG\n" \
+"uOn/9KgYpDzd\n" \
+"-----END CERTIFICATE-----\n";
 
 struct ButtonConfig {
   int buttonPin;
@@ -52,7 +78,7 @@ const int LED_DISPLAY_TIME = 7000;
 
 RTC_DATA_ATTR bool hasInitializedTime = false;
 
-WiFiClient espClient;
+WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
 
 bool syncNTPTime() {
@@ -109,13 +135,14 @@ bool connectToWiFi() {
 }
 
 bool connectToMQTT() {
+  espClient.setCACert(ROOT_CA);
   Serial.print("Connecting to MQTT broker");
   mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
   
   unsigned long startAttemptTime = millis();
   
   while (!mqttClient.connected() && millis() - startAttemptTime < MQTT_TIMEOUT) {
-    if (mqttClient.connect(MQTT_CLIENT_ID)) {
+    if (mqttClient.connect(MQTT_CLIENT_ID, user, password)) {
       Serial.println("\nMQTT connected!");
       return true;
     }
@@ -136,7 +163,7 @@ void goToSleep() {
   Serial.flush();
   
   esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
-  esp_sleep_enable_timer_wakeup(3600ULL * 1000000ULL); // 1 hour
+  esp_sleep_enable_timer_wakeup(60000000); // måske 1 minut
   esp_deep_sleep_start();
 }
 
