@@ -137,7 +137,7 @@ void goToSleep() {
   Serial.flush();
   
   esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
-  esp_sleep_enable_timer_wakeup(3600 * 1000000); // 1 hour
+  esp_sleep_enable_timer_wakeup(3600ULL * 1000000ULL); // 1 hour
   esp_deep_sleep_start();
 }
 
