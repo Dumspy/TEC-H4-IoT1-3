@@ -1,4 +1,5 @@
 #include "buttonHandler.h"
+#include <functional>
 
 ButtonHandler::ButtonHandler()
 {
@@ -19,16 +20,16 @@ const ButtonConfig* ButtonHandler::getPressedButtonConfig()
   return config;
 }
 
-void ButtonHandler::provideFeedBack(const ButtonConfig* config) 
+void ButtonHandler::provideFeedBack(const ButtonConfig* config, std::function<void()> callback) 
 {
     if (!config) return;
     
     digitalWrite(config->ledPin, HIGH);
     unsigned long ledOnTime = millis();
     
-    Serial.print(config->mood);
-    Serial.print(" smiley selected! ");
-    Serial.println(config->emoji);
+    if (callback) {
+        callback();
+    }
     
     unsigned long elapsedTime = millis() - ledOnTime;
     if (elapsedTime < LED_DISPLAY_TIME) {

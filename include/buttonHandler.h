@@ -2,6 +2,7 @@
 #define BUTTONHANDLER_H
 
 #include <Arduino.h>
+#include <functional>
 #include "config.h"
 
 class ButtonHandler 
@@ -10,7 +11,7 @@ class ButtonHandler
 		ButtonHandler();
 		
 		const ButtonConfig* getPressedButtonConfig();
-		void provideFeedBack(const ButtonConfig* config);
+		void provideFeedBack(const ButtonConfig* config, std::function<void()> callback);
 		void enableDeepSleepWakeup();
 		
 	private:

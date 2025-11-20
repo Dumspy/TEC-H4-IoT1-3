@@ -113,8 +113,12 @@ void setup() {
     
     if (config)
     {
-			btnHandler.provideFeedBack(config);
-			logButtonPress(config->buttonNumber, config->emoji, config->mood);
+	btnHandler.provideFeedBack(config, [config]() {
+		logButtonPress(config->buttonNumber, config->emoji, config->mood);
+		Serial.print(config->mood);
+		Serial.print(" smiley selected! ");
+		Serial.println(config->emoji);
+	});
     }
   }
   
