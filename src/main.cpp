@@ -48,21 +48,6 @@ uOn/9KgYpDzd
 -----END CERTIFICATE-----
 )EOF";
 
-struct ButtonConfig {
-  int buttonPin;
-  int ledPin;
-  int buttonNumber;
-  const char* emoji;
-  const char* mood;
-};
-
-static const ButtonConfig BUTTON_CONFIGS[] = {
-  {26, 18, 1, "😡", "angry"},
-  {25, 4, 2, "☹️", "sad"},
-  {33, 2, 3, "😐", "neutral"},
-  {32, 15, 4, "😊", "happy"},
-};
-
 const int BUTTON_COUNT = sizeof(BUTTON_CONFIGS) / sizeof(BUTTON_CONFIGS[0]);
 const int LED_DISPLAY_TIME = 7000;
 
