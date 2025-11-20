@@ -22,6 +22,9 @@ Opdatering af arbejds-portfolio
 Tilføjet certificate og TLS i connectoToMQTT
 Påbegyndt refactor af kode
 
+## Fælles
+Debbuging af TLS fejl med certifact
+
 # Dag 3 (2025-11-20)
 
 ## Felix
