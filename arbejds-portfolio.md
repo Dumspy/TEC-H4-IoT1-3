@@ -39,5 +39,8 @@ Initiale Proof of concept eksisterer stadig [her](https://github.com/Dumspy/TEC-
 ### DeepSleep
 **Analyse:**
 - Hvor længe skal anordningen være aktiv inden DeepSleep aktiveres?
+    - Vores device har et kort "setup" step som blandt andet syncer tid med ntp, før vi går i deepsleep første gange
 - Hvordan skal opvågen fungere?
+    - Vi har 2 states/måder vi kan vågne på 1: Button press, 2: Timer, alt efter hvilket måde vi vækkes sker der forskelig handlingere endte logging(med littlefs) eller sync(med mqtt)
 - Altid sleep efter hver handling eller forbliv oppe og håndtere flere klik og sleep efter x tid
+    - Vores device går altid til sleep efter hver handling da start up tid er minimal, og det resulterer i vi ikke behøves og forholde os til et extra "state" af enheden der er vågen
