@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CONFIG_H
+#define CONFIG_H
 
 #include <Arduino.h>
 
@@ -49,3 +50,5 @@ const int LED_DISPLAY_TIME = 7000;
 
 // Deep Sleep Wakeup Mask
 #define BUTTON_PIN_BITMASK ((1ULL << 25) | (1ULL << 32) | (1ULL << 33) | (1ULL << 26))
+
+#endif

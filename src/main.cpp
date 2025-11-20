@@ -21,25 +21,25 @@ RTC_DATA_ATTR bool hasInitializedTime = false;
 WiFiClientSecure espClient;
 PubSubClient mqttClient(espClient);
 
-bool syncNTPTime() {
-  Serial.print("Syncing time with NTP server");
-  configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER);
+// bool syncNTPTime() {
+//   Serial.print("Syncing time with NTP server");
+//   configTime(GMT_OFFSET_SEC, DAYLIGHT_OFFSET_SEC, NTP_SERVER);
   
-  unsigned long startAttemptTime = millis();
+//   unsigned long startAttemptTime = millis();
   
-  while (millis() - startAttemptTime < NTP_TIMEOUT) {
-    time_t now = time(nullptr);
-    if (now > 8 * 3600 * 2) {
-      Serial.println("\nTime synced!");
-      return true;
-    }
-    delay(500);
-    Serial.print(".");
-  }
+//   while (millis() - startAttemptTime < NTP_TIMEOUT) {
+//     time_t now = time(nullptr);
+//     if (now > 8 * 3600 * 2) {
+//       Serial.println("\nTime synced!");
+//       return true;
+//     }
+//     delay(500);
+//     Serial.print(".");
+//   }
   
-  Serial.println("\nTime sync failed!");
-  return false;
-}
+//   Serial.println("\nTime sync failed!");
+//   return false;
+// }
 
 String getFormattedTime() {
   struct tm timeinfo;
@@ -52,48 +52,48 @@ String getFormattedTime() {
   return String(buffer);
 }
 
-bool connectToWiFi() {
-  Serial.print("Connecting to WiFi");
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+// bool connectToWiFi() {
+//   Serial.print("Connecting to WiFi");
+//   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   
-  unsigned long startAttemptTime = millis();
+//   unsigned long startAttemptTime = millis();
   
-  while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT) {
-    delay(500);
-    Serial.print(".");
-  }
+//   while (WiFi.status() != WL_CONNECTED && millis() - startAttemptTime < WIFI_TIMEOUT) {
+//     delay(500);
+//     Serial.print(".");
+//   }
   
-  if (WiFi.status() == WL_CONNECTED) {
-    Serial.println("\nWiFi connected!");
-    Serial.print("IP address: ");
-    Serial.println(WiFi.localIP());
-    return true;
-  } else {
-    Serial.println("\nWiFi connection failed!");
-    return false;
-  }
-}
+//   if (WiFi.status() == WL_CONNECTED) {
+//     Serial.println("\nWiFi connected!");
+//     Serial.print("IP address: ");
+//     Serial.println(WiFi.localIP());
+//     return true;
+//   } else {
+//     Serial.println("\nWiFi connection failed!");
+//     return false;
+//   }
+// }
 
-bool connectToMQTT() {
-  espClient.setCACert(ROOT_CA);
-  espClient.setInsecure();
-  Serial.print("Connecting to MQTT broker");
-  mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
+// bool connectToMQTT() {
+//   espClient.setCACert(ROOT_CA);
+//   espClient.setInsecure();
+//   Serial.print("Connecting to MQTT broker");
+//   mqttClient.setServer(MQTT_SERVER, MQTT_PORT);
   
-  unsigned long startAttemptTime = millis();
+//   unsigned long startAttemptTime = millis();
   
-  while (!mqttClient.connected() && millis() - startAttemptTime < MQTT_TIMEOUT) {
-    if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD)) {
-      Serial.println("\nMQTT connected!");
-      return true;
-    }
-    delay(500);
-    Serial.print(".");
-  }
+//   while (!mqttClient.connected() && millis() - startAttemptTime < MQTT_TIMEOUT) {
+//     if (mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASSWORD)) {
+//       Serial.println("\nMQTT connected!");
+//       return true;
+//     }
+//     delay(500);
+//     Serial.print(".");
+//   }
   
-  Serial.println("\nMQTT connection failed!");
-  return false;
-}
+//   Serial.println("\nMQTT connection failed!");
+//   return false;
+// }
 
 void goToSleep() {
   Serial.println("Going to deep sleep...");
