@@ -23,9 +23,6 @@ const long GMT_OFFSET_SEC = 3600;
 const int DAYLIGHT_OFFSET_SEC = 3600;
 const int NTP_TIMEOUT = 10000;
 
-const char* user = "elev1";
-const char* password = "password";
-
 const char* ROOT_CA = R"EOF(
 -----BEGIN CERTIFICATE-----
 MIIDBTCCAe2gAwIBAgIUXopiLMN2tHLH5ALoHzUf4tY5upUwDQYJKoZIhvcNAQEL
