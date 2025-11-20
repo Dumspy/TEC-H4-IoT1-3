@@ -28,5 +28,7 @@ Debbuging af TLS fejl med certificate
 # Dag 3 (2025-11-20)
 
 ## Felix
+Håndtering af merge conflicts
 
 ## Lasse
+Refactor færdig
