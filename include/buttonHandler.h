@@ -7,11 +7,14 @@
 class ButtonHandler 
 {
 	public:
-		ButtonHandler::ButtonHandler();
+		ButtonHandler();
 		
 		const ButtonConfig* getPressedButtonConfig();
 		void provideFeedBack(const ButtonConfig* config);
 		void enableDeepSleepWakeup();
+		
+	private:
+		const ButtonConfig* getButtonConfig(int pin);
 };
 
 #endif

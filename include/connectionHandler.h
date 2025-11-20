@@ -13,7 +13,7 @@ private:
 
 public:
 	// '&' efter typen betyder at det er en reference, til et eksisterende objekt, der bliver passed med og ikke en ny instans af objektet
-	ConnectionHandler::ConnectionHandler(WiFiClientSecure& client, PubSubClient& mqtt);
+	ConnectionHandler(WiFiClientSecure& client, PubSubClient& mqtt);
 	
 	bool connectoToWiFi();
 	bool syncNTPTime();
