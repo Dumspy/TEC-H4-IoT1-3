@@ -20,3 +20,6 @@ Opdatering af arbejds-portfolio
 
 ## Lasse
 Tilføjet certificate og TLS i connectoToMQTT
+
+## Fælles
+Debbuging af TLS fejl med certifact
