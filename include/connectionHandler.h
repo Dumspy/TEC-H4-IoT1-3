@@ -15,7 +15,7 @@ public:
 	// '&' efter typen betyder at det er en reference, til et eksisterende objekt, der bliver passed med og ikke en ny instans af objektet
 	ConnectionHandler(WiFiClientSecure& client, PubSubClient& mqtt);
 	
-	bool connectoToWiFi();
+	bool connectToWiFi();
 	bool syncNTPTime();
 	bool connectToMQTT();
 	void disconnectWiFi();

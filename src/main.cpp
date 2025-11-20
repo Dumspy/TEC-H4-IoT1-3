@@ -75,7 +75,7 @@ void setup() {
   if (wakeup_reason == ESP_SLEEP_WAKEUP_TIMER || !hasInitializedTime) {
     Serial.println("Woke up from timer for sync!");
     
-    if (connHandler.connectoToWiFi()) {
+    if (connHandler.connectToWiFi()) {
       if (connHandler.syncNTPTime()) {
         hasInitializedTime = true;
       }

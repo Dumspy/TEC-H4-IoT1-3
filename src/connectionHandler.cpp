@@ -4,7 +4,7 @@
 
 ConnectionHandler::ConnectionHandler(WiFiClientSecure& client, PubSubClient& mqtt) : espClient(client), mqttClient(mqtt) {}
 
-bool ConnectionHandler::connectoToWiFi()
+bool ConnectionHandler::connectToWiFi()
 {
 	Serial.print("Connecting to WiFi");
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
